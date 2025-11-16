@@ -69,10 +69,12 @@ export function UserAnalyticsCards() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [latestAnalysis, setLatestAnalysis] =
-    useState<LatestAnalysis | null>(null);
-  const [healthSummary, setHealthSummary] =
-    useState<HealthSummary | null>(null);
+  const [latestAnalysis, setLatestAnalysis] = useState<LatestAnalysis | null>(
+    null
+  );
+  const [healthSummary, setHealthSummary] = useState<HealthSummary | null>(
+    null
+  );
 
   /* ————————————————
      LOAD USER
@@ -208,7 +210,7 @@ export function UserAnalyticsCards() {
         title: "Last Analysis",
         value: latestTime,
         description: latestStatus,
-        color: hasStress ? "text-red-400" : "text-primary",
+        color: "text-primary",
         trend: "Recent",
       },
       {
@@ -348,44 +350,37 @@ export function UserAnalyticsCards() {
             <CardContent className="relative flex items-center justify-center min-h-[130px] px-2">
               {/* LAST ANALYSIS SPECIAL */}
               {stat.title === "Last Analysis" && latestAnalysis?.imageUrl ? (
-                <div className="flex items-center gap-4 w-full">
-                  <div className="relative w-20 h-20 rounded-xl overflow-hidden shadow-lg">
+                <>
+                  {/* Centered Image */}
+                  <div className="relative w-30 h-20 rounded-sm overflow-hidden shadow-lg mb-6">
                     <img
                       src={latestAnalysis.imageUrl}
                       alt="Eye scan"
-                      className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700"
+                      className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 "
                     />
                     <div className="absolute inset-0 bg-black/30" />
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div
-                      className={`text-2xl font-bold truncate ${
-                        latestAnalysis.hasStress
-                          ? "text-red-400"
-                          : "text-white"
-                      }`}
-                    >
-                      {formatDistanceToNow(
-                        new Date(latestAnalysis.createdAt),
-                        {
-                          addSuffix: true,
-                        }
-                      )}
+                  {/* Content at the bottom */}
+                  <div className="absolute bottom-0 left-2 right-2 text-center">
+                    <div className={`text-sm text-gray-400 truncate `}>
+                      {formatDistanceToNow(new Date(latestAnalysis.createdAt), {
+                        addSuffix: true,
+                      })}
                     </div>
 
                     <div
                       className={`mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold
-                        ${
-                          latestAnalysis.hasStress
-                            ? "bg-red-500/20 text-red-400"
-                            : "bg-primary/20 text-primary"
-                        }`}
+              ${
+                latestAnalysis.hasStress
+                  ? "bg-red-500/20 text-red-400"
+                  : "bg-primary/20 text-primary"
+              }`}
                     >
-                      {latestAnalysis.hasStress ? "⚠️ Stress" : "✓ No Stress"}
+                      {latestAnalysis.hasStress ? " Stress" : "No Stress"}
                     </div>
                   </div>
-                </div>
+                </>
               ) : stat.title === "Wellness Goal" &&
                 stat.extraData &&
                 stat.extraData.length > 0 ? (
@@ -403,24 +398,15 @@ export function UserAnalyticsCards() {
                       <div key={i} className="space-y-1">
                         <div className="flex justify-between text-xs text-white/60">
                           <span>{format(new Date(week.week), "MMM d")}</span>
-                          <span
-                            className={`font-semibold ${
-                              week.percentage > 50
-                                ? "text-red-400"
-                                : "text-primary"
-                            }`}
-                          >
+                          <span className={`font-semibold `}>
                             {week.stressDetected}/{week.total}
                           </span>
                         </div>
 
                         <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                           <div
-                            className={`h-full transition-all rounded-full ${
-                              week.percentage > 50
-                                ? "bg-red-500/70"
-                                : "bg-gradient-to-r from-primary to-accent"
-                            }`}
+                            className={`h-full transition-all rounded-full bg-gradient-to-r from-primary to-accent
+                            `}
                             style={{
                               width: `${week.percentage}%`,
                             }}
