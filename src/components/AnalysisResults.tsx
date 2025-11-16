@@ -1,83 +1,99 @@
-import { useEffect, useState } from 'react';
-import { format } from 'date-fns';
-import { Eye, Brain, Activity } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { User } from '@/types';
+import { useEffect, useState } from "react";
+import { Eye, Brain, Activity, AlertCircle, TrendingUp } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
+
+// Card style to apply
+const glassCardStyle = `
+  relative group overflow-hidden
+  rounded-2xl border border-white/10
+  bg-gradient-to-br from-white/5 to-white/2
+  backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.15)]
+  transition-all duration-500
+  hover:shadow-[0_12px_40px_rgb(0,0,0,0.25)]
+  hover:-translate-y-1
+`;
+
+interface User {
+  name?: string;
+  email: string;
+  age?: number;
+}
 
 interface LatestAnalysis {
   _id: string;
   username: string;
   hasStress: boolean;
   imageUrl: string | null;
+  confidenceLevel: number | null;
+  pupilDilation: number | null;
+  tensionRings: number | null;
+  fullDetails?: any;
   createdAt: string;
-}
-
-interface LatestEyeImage {
-  _id: string;
-  username: string;
-  imageUrl: string;
-  cloudinaryId: string;
-  uploadedAt: string;
-}
-
-interface AnalysisCount {
-  username: string;
-  totalAnalyses: number;
 }
 
 export function AnalysisResults() {
   const [user, setUser] = useState<User | null>(null);
-  const [latestAnalysis, setLatestAnalysis] = useState<LatestAnalysis | null>(null);
-  const [latestImage, setLatestImage] = useState<LatestEyeImage | null>(null);
-  const [analysisCount, setAnalysisCount] = useState<AnalysisCount | null>(null);
+  const [latestAnalysis, setLatestAnalysis] = useState<LatestAnalysis | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
 
-  // Mock data for detailed analysis (would come from API in real implementation)
-  const detailedAnalysis = {
-    stressLevel: 3.2,
-    metrics: [
-      { 
-        label: 'Pupil Dilation', 
-        value: 6.5, 
-        icon: Eye,
-        description: 'Measures autonomic nervous system response'
-      },
-      { 
-        label: 'Eye Movement', 
-        value: 4.2, 
-        icon: Activity,
-        description: 'Tracks micro-movements and fixation patterns'
-      },
-      { 
-        label: 'Blink Rate', 
-        value: 7.8, 
-        icon: Brain,
-        description: 'Indicates cognitive load and stress levels'
-      },
-    ]
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    };
+    return date.toLocaleString("en-US", options);
+  };
+
+  const formatLongDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    };
+    return date.toLocaleString("en-US", options);
   };
 
   useEffect(() => {
-    // Get user from localStorage
     const getUserFromStorage = (): User | null => {
-      const storedUser = localStorage.getItem('eyeGlazeUser');
+      const storedUser = localStorage.getItem("eyeGlazeUser");
       return storedUser ? JSON.parse(storedUser) : null;
     };
-    
+
     setUser(getUserFromStorage());
   }, []);
 
   const fetchLatestAnalysis = async (username: string) => {
     try {
-      const response = await fetch(`http://localhost:5174/api/analysis/latest/${username}`);
-      
+      const response = await fetch(
+        `http://localhost:5174/api/analysis/latest/${username}`
+      );
+
       if (!response.ok) {
         throw new Error(`Failed to fetch latest analysis: ${response.status}`);
       }
-      
+
       const result = await response.json();
       if (result.status === "success" && result.data) {
         setLatestAnalysis(result.data);
@@ -88,54 +104,14 @@ export function AnalysisResults() {
     }
   };
 
-  const fetchLatestImage = async (username: string) => {
-    try {
-      const response = await fetch(`http://localhost:5174/api/upload/eye-image/latest/${username}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch latest eye image: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      if (result.status === "success" && result.data) {
-        setLatestImage(result.data);
-      }
-    } catch (error) {
-      console.error("Error fetching latest eye image:", error);
-      // Don't show toast here as image might not always be available
-    }
-  };
-
-  const fetchAnalysisCount = async (username: string) => {
-    try {
-      const response = await fetch(`http://localhost:5174/api/analysis/count/${username}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch analysis count: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      if (result.status === "success" && result.data) {
-        setAnalysisCount(result.data);
-      }
-    } catch (error) {
-      console.error("Error fetching analysis count:", error);
-      toast.error("Could not retrieve analysis count");
-    }
-  };
-
   useEffect(() => {
     const loadData = async () => {
       if (!user?.email) return;
 
       setLoading(true);
-      
+
       try {
-        await Promise.all([
-          fetchLatestAnalysis(user.email),
-          fetchLatestImage(user.email),
-          fetchAnalysisCount(user.email)
-        ]);
+        await fetchLatestAnalysis(user.email);
       } finally {
         setLoading(false);
       }
@@ -146,34 +122,30 @@ export function AnalysisResults() {
     }
   }, [user]);
 
-  const getStressColor = (hasStress: boolean) => {
-    return hasStress ? 'text-red-400' : 'text-green-400';
+  const getStressLevel = (
+    hasStress: boolean,
+    confidenceLevel: number | null
+  ) => {
+    if (!hasStress) return "Low";
+    if (!confidenceLevel) return "Moderate";
+    if (confidenceLevel > 0.7) return "High";
+    return "Moderate";
   };
 
-  const getStressLevel = (hasStress: boolean) => {
-    return hasStress ? 'Moderate' : 'Low';
-  };
-
-  const getStressBadgeVariant = (hasStress: boolean) => {
-    return hasStress ? 'secondary' : 'default';
-  };
-
-  // Generate analysis ID from database ID or create a placeholder
-  const getAnalysisId = () => {
-    if (!latestAnalysis?._id) return "#EG-0000-000";
-    
-    // Extract last 6 chars from MongoDB ID and format as EG-YYYY-XXX
-    const year = new Date().getFullYear();
-    const idSuffix = latestAnalysis._id.slice(-6);
-    return `#EG-${year}-${idSuffix}`;
+  const getStressBadgeClasses = (hasStress: boolean) => {
+    return hasStress
+      ? "bg-red-500/20 text-red-400 border-red-400/40"
+      : "bg-emerald-500/20 text-emerald-400 border-emerald-400/40";
   };
 
   if (loading) {
     return (
-      <Card className="glass-card">
+      <Card className={glassCardStyle}>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-2xl">
-            <Eye className="h-6 w-6" />
+          <CardTitle className="flex items-center gap-3 text-2xl text-white">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-primary/30 to-accent/10">
+              <Eye className="h-5 w-5 text-primary" />
+            </div>
             <span>Loading Analysis...</span>
           </CardTitle>
         </CardHeader>
@@ -188,16 +160,19 @@ export function AnalysisResults() {
 
   if (!latestAnalysis) {
     return (
-      <Card className="glass-card">
+      <Card className={glassCardStyle}>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-2xl">
-            <Eye className="h-6 w-6" />
+          <CardTitle className="flex items-center gap-3 text-2xl text-white">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-primary/30 to-accent/10">
+              <Eye className="h-5 w-5 text-primary" />
+            </div>
             <span>No Analysis Found</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            You haven't completed any eye analyses yet. Complete your first scan to see results here.
+          <p className="text-white/60">
+            You haven't completed any eye analyses yet. Complete your first scan
+            to see results here.
           </p>
         </CardContent>
       </Card>
@@ -205,93 +180,244 @@ export function AnalysisResults() {
   }
 
   return (
-    <Card className="glass-card">
+    <Card className={glassCardStyle}>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle className="flex items-center space-x-2 text-2xl">
-              <Eye className="h-6 w-6" />
+            <CardTitle className="flex items-center gap-3 text-2xl text-white">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-primary/30 to-accent/10 group-hover:scale-110 transition-transform">
+                <Eye className="h-5 w-5 text-primary" />
+              </div>
               <span>Latest Analysis</span>
             </CardTitle>
-            <CardDescription className="text-base">
-              {format(new Date(latestAnalysis.createdAt), "MMM d, yyyy 'at' h:mm a")} • Analysis ID: {getAnalysisId()}
+            {/* --- MODIFICATION: Removed Analysis ID --- */}
+            <CardDescription className="text-white/60 mt-2 ml-14 sm:ml-0">
+              {formatDate(latestAnalysis.createdAt)}
             </CardDescription>
           </div>
-          <Badge variant={getStressBadgeVariant(latestAnalysis.hasStress)} className="px-4 py-2 text-sm">
-            {getStressLevel(latestAnalysis.hasStress)} Stress
+          <Badge
+            variant="outline"
+            className={`px-4 py-2 text-sm mt-4 sm:mt-0 ${getStressBadgeClasses(
+              latestAnalysis.hasStress
+            )}`}
+          >
+            {getStressLevel(
+              latestAnalysis.hasStress,
+              latestAnalysis.confidenceLevel
+            )}{" "}
+            Stress
           </Badge>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Stress Level Display with Image */}
-          <div className="space-y-8">
-            <div className="text-center">
-              <div className={`text-8xl font-bold ${getStressColor(latestAnalysis.hasStress)} mb-4`}>
-                {latestAnalysis.hasStress ? '3.2' : '2.1'}
-              </div>
-              <div className="text-xl text-muted-foreground mb-6">
-                Stress Level (out of 10)
-              </div>
-              <Progress 
-                value={latestAnalysis.hasStress ? 32 : 21} 
-                className="w-full h-4 mb-4"
-              />
-              <p className="text-sm text-muted-foreground">
-                Your stress level is currently in the {getStressLevel(latestAnalysis.hasStress).toLowerCase()} range
-              </p>
-            </div>
-
-            {/* Display eye image if available */}
-            {(latestAnalysis.imageUrl || latestImage?.imageUrl) && (
-              <div className="mt-6">
-                <h3 className="text-lg font-medium mb-3">Eye Scan Image</h3>
-                <div className="relative rounded-lg overflow-hidden" style={{ height: "200px" }}>
-                  <img 
-                    src={latestAnalysis.imageUrl || latestImage?.imageUrl} 
-                    alt="Eye scan" 
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Left Column: Stress Level & Image */}
+          <div className="space-y-6">
+            {/* Eye Scan Image */}
+            {latestAnalysis.imageUrl && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-white/90">
+                  Eye Scan Image
+                </h3>
+                <div
+                  className="relative rounded-lg overflow-hidden border border-white/20"
+                  style={{ height: "300px" }}
+                >
+                  <img
+                    src={latestAnalysis.imageUrl}
+                    alt="Eye scan"
                     className="absolute inset-0 w-full h-full object-cover"
                   />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Analysis based on eye scan taken {format(new Date(latestAnalysis.createdAt), "MMMM d, yyyy 'at' h:mm a")}
+                
+                {/* --- MODIFICATION: Alert moved here --- */}
+                <Alert
+                  className={
+                    latestAnalysis.hasStress
+                      ? "border-red-400/40 bg-red-500/10 text-red-100"
+                      : "border-emerald-300/40 bg-emerald-500/10 text-emerald-100"
+                  }
+                >
+                  <AlertDescription className="text-white/80">
+                    {latestAnalysis.hasStress
+                      ? "STRESS DETECTED - Consider taking a break and practicing relaxation techniques"
+                      : "NO STRESS - Your stress levels appear within a healthy range"}
+                  </AlertDescription>
+                </Alert>
+
+                <p className="text-xs text-white/60 mt-2">
+                  Analysis based on eye scan taken{" "}
+                  {formatLongDate(latestAnalysis.createdAt)}
                 </p>
               </div>
             )}
           </div>
 
-          {/* Analysis Metrics */}
+          {/* Right Column: Detailed Metrics */}
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-semibold">Detailed Analysis</h3>
-              {analysisCount && (
-                <Badge variant="outline" className="px-3 py-1">
-                  {analysisCount.totalAnalyses} total {analysisCount.totalAnalyses === 1 ? 'analysis' : 'analyses'}
-                </Badge>
-              )}
-            </div>
-            
+            <h3 className="text-2xl font-semibold text-white/90">
+              Detailed Analysis
+            </h3>
+
+            {/* Metrics */}
             <div className="space-y-6">
-              {detailedAnalysis.metrics.map((metric, index) => (
-                <div key={index} className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                        <metric.icon className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <span className="font-medium">{metric.label}</span>
-                        <p className="text-xs text-muted-foreground">{metric.description}</p>
-                      </div>
+              {/* Pupil Dilation */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                      <Eye className="h-5 w-5 text-primary" />
                     </div>
-                    <div className="text-right">
-                      <span className="text-lg font-semibold">{metric.value}</span>
-                      <div className="text-xs text-muted-foreground">out of 10</div>
+                    <div>
+                      <span className="font-medium text-white/90">
+                        Pupil Diameter
+                      </span>
+                      <p className="text-xs text-white/60">
+                        Measured size in millimeters
+                      </p>
                     </div>
                   </div>
-                  <Progress value={metric.value * 10} className="w-full h-2" />
+                  <div className="text-right">
+                    <span className="text-lg font-semibold text-white">
+                      {latestAnalysis.pupilDilation != null &&
+                      latestAnalysis.pupilDilation !== undefined
+                        ? `${latestAnalysis.pupilDilation.toFixed(2)} mm`
+                        : "N/A"}
+                    </span>
+                  </div>
                 </div>
-              ))}
+                {latestAnalysis.pupilDilation != null &&
+                  latestAnalysis.pupilDilation !== undefined && (
+                    <Progress
+                      value={Math.min(
+                        (latestAnalysis.pupilDilation / 8) * 100,
+                        100
+                      )}
+                      className="w-full h-2 bg-white/10 [&>div]:bg-primary"
+                    />
+                  )}
+              </div>
+
+              {/* Tension Rings */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                      <Activity className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <span className="font-medium text-white/90">
+                        Tension Rings
+                      </span>
+                      <p className="text-xs text-white/60">
+                        Stress indicators in iris
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-lg font-semibold text-white">
+                      {latestAnalysis.tensionRings != null &&
+                      latestAnalysis.tensionRings !== undefined
+                        ? latestAnalysis.tensionRings
+                        : "N/A"}
+                    </span>
+                    <div className="text-xs text-white/60">
+                      {latestAnalysis.tensionRings != null &&
+                      latestAnalysis.tensionRings !== undefined
+                        ? `${
+                            latestAnalysis.tensionRings >= 2
+                              ? "High"
+                              : latestAnalysis.tensionRings === 1
+                              ? "Moderate"
+                              : "Low"
+                          } stress`
+                        : ""}
+                    </div>
+                  </div>
+                </div>
+                {latestAnalysis.tensionRings != null &&
+                  latestAnalysis.tensionRings !== undefined && (
+                    <Progress
+                      value={Math.min(
+                        (latestAnalysis.tensionRings / 3) * 100,
+                        100
+                      )}
+                      className="w-full h-2 bg-white/10 [&>div]:bg-primary"
+                    />
+                  )}
+              </div>
+
+              {/* Confidence Level */}
+              {latestAnalysis.confidenceLevel != null &&
+                latestAnalysis.confidenceLevel !== undefined && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                          <TrendingUp className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <span className="font-medium text-white/90">
+                            Analysis Confidence
+                          </span>
+                          <p className="text-xs text-white/60">
+                            AI prediction accuracy
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-lg font-semibold text-white">
+                          {(latestAnalysis.confidenceLevel * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+                    <Progress
+                      value={latestAnalysis.confidenceLevel * 100}
+                      className="w-full h-2 bg-white/10 [&>div]:bg-primary"
+                    />
+                  </div>
+                )}
+
+              {/* Additional Details from Flask */}
+              {latestAnalysis.fullDetails && (
+                <div className="mt-6 p-4 rounded-xl bg-slate-900/50 border border-white/10">
+                  <h4 className="font-medium mb-3 flex items-center gap-2 text-white/90">
+                    <AlertCircle className="h-4 w-4" />
+                    Additional Insights
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    {latestAnalysis.fullDetails.subject_info && (
+                      <div className="flex justify-between">
+                        <span className="text-white/60">Age Group:</span>
+                        <span className="font-medium text-white/90">
+                          {latestAnalysis.fullDetails.subject_info.age_group}
+                        </span>
+                      </div>
+                    )}
+                    {latestAnalysis.fullDetails.pupil_analysis?.status && (
+                      <div className="flex justify-between">
+                        <span className="text-white/60">Pupil Status:</span>
+                        <span className="font-medium text-white/90">
+                          {latestAnalysis.fullDetails.pupil_analysis.status}
+                        </span>
+                      </div>
+                    )}
+                    {latestAnalysis.fullDetails.iris_analysis
+                      ?.interpretation && (
+                      <div className="flex justify-between">
+                        <span className="text-white/60">Iris Analysis:</span>
+                        <span className="font-medium text-white/90">
+                          {
+                            latestAnalysis.fullDetails.iris_analysis
+                              .interpretation
+                          }
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

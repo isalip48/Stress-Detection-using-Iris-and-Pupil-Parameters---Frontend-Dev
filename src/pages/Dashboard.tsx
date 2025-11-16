@@ -26,6 +26,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { UserAnalyticsCards } from "@/components/UserAnalyticsCards";
 import { UserAnalysisHistory } from "@/components/UserAnalysisHistory";
+import { useNavigate } from "react-router-dom"; // <-- 1. Import useNavigate
 
 export function Dashboard() {
   const { user } = useAuth();
@@ -37,6 +38,8 @@ export function Dashboard() {
     probability: number;
     fullDetails?: any;
   } | null>(null);
+
+  const navigate = useNavigate(); // <-- 2. Initialize useNavigate
 
   // Helper to determine if image is actually stressed (based on Flask backend logic)
   const isActuallyStressed = (
@@ -317,30 +320,31 @@ export function Dashboard() {
     }
   };
 
+  // --- 3. Update quickActions array ---
   const quickActions = [
     {
       icon: Eye,
       title: "View Latest Results",
       description: "Check your most recent analysis",
-      href: "/results",
+      targetTab: "current", // Routes to 'Current' tab
     },
     {
       icon: TrendingUp,
       title: "Analytics Dashboard",
       description: "Explore detailed insights",
-      href: "/results",
+      targetTab: "insights", // Routes to 'Insights' tab
     },
     {
       icon: Activity,
       title: "Stress Patterns",
       description: "Understand your trends",
-      href: "/results",
+      targetTab: "trends", // Routes to 'Trends' tab
     },
     {
       icon: Brain,
       title: "Wellness Tips",
       description: "Personalized recommendations",
-      href: "/results",
+      targetTab: "current", // 'StressRecommendations' is on the 'Current' tab
     },
   ];
 
@@ -386,37 +390,35 @@ export function Dashboard() {
         {/* Analytics Cards */}
         <UserAnalyticsCards />
 
-        {/* --- TABS START HERE --- */}
-        {/* We move the Tabs component to wrap the new grid layout */}
-        <Tabs defaultValue="upload" className="mt-8">
-          <TabsList
-            className="
-              grid w-full grid-cols-2 max-w-md mx-auto 
-              bg-white/5 border border-white/15 rounded-full 
-              backdrop-blur-2xl shadow-[0_14px_35px_rgba(0,0,0,0.45)]
-            "
-          >
-            <TabsTrigger
-              value="upload"
-              className="rounded-full data-[state=active]:bg-white data-[state=active]:text-slate-900 text-white/70 text-sm md:text-base"
-            >
-              Upload &amp; Analyze
-            </TabsTrigger>
-            <TabsTrigger
-              value="overview"
-              className="rounded-full data-[state=active]:bg-white data-[state=active]:text-slate-900 text-white/70 text-sm md:text-base"
-            >
-              Overview
-            </TabsTrigger>
-          </TabsList>
+        {/* --- MAIN GRID (Tabs + Sticky Sidebar) --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-8">
+          {/* Main Content Column (Tabs) */}
+          <div className="lg:col-span-2 space-y-8">
+            <Tabs defaultValue="upload" className="w-full">
+              <TabsList
+                className="
+                  grid w-full grid-cols-2 max-w-md mx-auto 
+                  p-1
+                  bg-white/5 border border-white/15 rounded-full 
+                  backdrop-blur-2xl shadow-[0_14px_35px_rgba(0,0,0,0.45)]
+                "
+              >
+                <TabsTrigger
+                  value="upload"
+                  className="rounded-full data-[state=active]:bg-white data-[state=active]:text-slate-900 text-white/70 text-sm md:text-base"
+                >
+                  Upload &amp; Analyze
+                </TabsTrigger>
+                <TabsTrigger
+                  value="overview"
+                  className="rounded-full data-[state=active]:bg-white data-[state=active]:text-slate-900 text-white/70 text-sm md:text-base"
+                >
+                  Overview
+                </TabsTrigger>
+              </TabsList>
 
-          {/* --- MAIN CONTENT GRID (2-COL + STICKY SIDEBAR) --- */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-6">
-            
-            {/* --- MAIN CONTENT COL (Col 1) --- */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Upload & Analyze Content */}
-              <TabsContent value="upload" className="mt-0 space-y-6">
+              {/* Upload & Analyze Tab Content */}
+              <TabsContent value="upload" className="space-y-6 mt-4">
                 {/* Upload Card */}
                 <Card
                   className="
@@ -917,8 +919,8 @@ export function Dashboard() {
                 )}
               </TabsContent>
 
-              {/* Overview / History Content */}
-              <TabsContent value="overview" className="mt-0">
+              {/* Overview / History Tab Content */}
+              <TabsContent value="overview" className="space-y-6 mt-4">
                 <Card
                   className="
                     relative group overflow-hidden
@@ -947,98 +949,104 @@ export function Dashboard() {
                   </CardContent>
                 </Card>
               </TabsContent>
-            </div>
-
-            {/* --- STICKY SIDEBAR (Col 2) --- */}
-            <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24 h-fit">
-              {/* Quick Actions */}
-              <Card
-                className="
-                  relative group overflow-hidden
-                  rounded-2xl border border-white/10
-                  bg-gradient-to-br from-white/5 to-white/2
-                  backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.15)]
-                  transition-all duration-500
-                  hover:shadow-[0_12px_40px_rgb(0,0,0,0.25)]
-                  hover:-translate-y-1
-                "
-              >
-                <CardHeader>
-                  <CardTitle className="text-lg md:text-xl">
-                    Quick Actions
-                  </CardTitle>
-                  <CardDescription className="text-xs md:text-sm text-white/60">
-                    Access your most used features
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {quickActions.map((action, index) => (
-                    <Button
-                      key={index}
-                      variant="ghost"
-                      className="
-                        w-full justify-start h-auto p-3.5 rounded-2xl
-                        hover:bg-white/10 hover:scale-[1.01]
-                        transition-all text-left
-                      "
-                    >
-                      <action.icon className="mr-3 h-5 w-5 text-primary" />
-                      <div>
-                        <div className="font-medium text-sm">
-                          {action.title}
-                        </div>
-                        <div className="text-[0.7rem] text-white/55">
-                          {action.description}
-                        </div>
-                      </div>
-                    </Button>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Today's Insight */}
-              <Card
-                className="
-                  relative group overflow-hidden
-                  rounded-2xl border border-white/10
-                  bg-gradient-to-br from-white/5 to-white/2
-                  backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.15)]
-                  transition-all duration-500
-                  hover:shadow-[0_12px_40px_rgb(0,0,0,0.25)]
-                  hover:-translate-y-1
-                "
-              >
-                <CardHeader>
-                  <CardTitle className="text-lg md:text-xl flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Brain className="h-5 w-5 text-primary" />
-                    </div>
-                    <span>Today&apos;s Insight</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <p className="text-white/80 leading-relaxed text-xs md:text-sm">
-                    Your stress levels tend to peak around{" "}
-                    <span className="font-semibold text-emerald-200">
-                      2–3 PM
-                    </span>
-                    . Consider taking a 5-minute mindfulness break during this
-                    window to help maintain optimal wellness and cognitive
-                    performance.
-                  </p>
-                  <Badge
-                    variant="secondary"
-                    className="
-                      text-[0.7rem] rounded-full bg-white/10 text-white border border-white/20
-                    "
-                  >
-                    Personalized Tip
-                  </Badge>
-                </CardContent>
-              </Card>
-            </div>
+            </Tabs>
           </div>
-        </Tabs>
+
+          {/* --- Sticky Sidebar Column --- */}
+          <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24 h-fit">
+            {/* Quick Actions */}
+            <Card
+              className="
+                relative group overflow-hidden
+                rounded-2xl border border-white/10
+                bg-gradient-to-br from-white/5 to-white/2
+                backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.15)]
+                transition-all duration-500
+                hover:shadow-[0_12px_40px_rgb(0,0,0,0.25)]
+                hover:-translate-y-1
+              "
+            >
+              <CardHeader>
+                <CardTitle className="text-lg md:text-xl text-white/90">
+                  Quick Actions
+                </CardTitle>
+                <CardDescription className="text-white/60">
+                  Access your most used features
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {/* --- 4. Update Button onClick --- */}
+                {quickActions.map((action, index) => (
+                  <Button
+                    key={index}
+                    variant="ghost"
+                    className="
+                      w-full justify-start h-auto p-3.5 rounded-2xl
+                      hover:bg-white/10 hover:scale-[1.01]
+                      transition-all text-left
+                    "
+                    onClick={() =>
+                      navigate("/results", {
+                        state: { defaultTab: action.targetTab },
+                      })
+                    }
+                  >
+                    <action.icon className="mr-3 h-5 w-5 text-primary" />
+                    <div>
+                      <div className="font-medium text-sm text-white/90">
+                        {action.title}
+                      </div>
+                      <div className="text-[0.7rem] text-white/55">
+                        {action.description}
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Today's Insight */}
+            <Card
+              className="
+                relative group overflow-hidden
+                rounded-2xl border border-white/10
+                bg-gradient-to-br from-white/5 to-white/2
+                backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.15)]
+                transition-all duration-500
+                hover:shadow-[0_12px_40px_rgb(0,0,0,0.25)]
+                hover:-translate-y-1
+              "
+            >
+              <CardHeader>
+                <CardTitle className="text-lg md:text-xl flex items-center gap-3 text-white/90">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Brain className="h-5 w-5 text-primary" />
+                  </div>
+                  <span>Today&apos;s Insight</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <p className="text-white/80 leading-relaxed text-xs md:text-sm">
+                  Your stress levels tend to peak around{" "}
+                  <span className="font-semibold text-emerald-200">
+                    2–3 PM
+                  </span>
+                  . Consider taking a 5-minute mindfulness break during this
+                  window to help maintain optimal wellness and cognitive
+                  performance.
+                </p>
+                <Badge
+                  variant="secondary"
+                  className="
+                    text-[0.7rem] rounded-full bg-white/10 text-white border border-white/20
+                  "
+                >
+                  Personalized Tip
+                </Badge>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
