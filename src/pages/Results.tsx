@@ -119,7 +119,7 @@ export function Results() {
       setLoading(true);
       try {
         const res = await fetch(
-          `http://localhost:5174/api/analysis/user/${user.email}`
+          `https://fancy-avrit-isali-e9a270c8.koyeb.app/api/analysis/user/${user.email}`
         );
         if (!res.ok) {
           throw new Error("Failed to fetch analysis trends");

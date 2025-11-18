@@ -32,7 +32,7 @@ export function UserAnalysisHistory() {
       }
 
       try {
-        const response = await fetch(`http://localhost:5174/api/analysis/user/${encodeURIComponent(user.email)}`);
+        const response = await fetch(`https://fancy-avrit-isali-e9a270c8.koyeb.app/api/analysis/user/${encodeURIComponent(user.email)}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch analysis history');

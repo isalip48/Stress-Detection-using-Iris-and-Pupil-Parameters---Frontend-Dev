@@ -96,7 +96,7 @@ export function UserAnalyticsCards() {
 
     try {
       const response = await fetch(
-        `http://localhost:5174/api/analysis/user/${identifier}`
+        `https://fancy-avrit-isali-e9a270c8.koyeb.app/api/analysis/user/${identifier}`
       );
 
       if (!response.ok) throw new Error("Failed to fetch user analytics");
@@ -121,7 +121,7 @@ export function UserAnalyticsCards() {
 
     try {
       const res = await fetch(
-        `http://localhost:5174/api/analysis/latest/${user.email}`
+        `https://fancy-avrit-isali-e9a270c8.koyeb.app/api/analysis/latest/${user.email}`
       );
       const result = await res.json();
 
@@ -139,7 +139,7 @@ export function UserAnalyticsCards() {
 
     try {
       const res = await fetch(
-        `http://localhost:5174/api/recommendations/summary/${user.email}`
+        `https://fancy-avrit-isali-e9a270c8.koyeb.app/api/recommendations/summary/${user.email}`
       );
       const result = await res.json();
 

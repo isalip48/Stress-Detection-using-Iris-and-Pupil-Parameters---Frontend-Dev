@@ -87,7 +87,7 @@ export function AnalysisResults() {
   const fetchLatestAnalysis = async (username: string) => {
     try {
       const response = await fetch(
-        `http://localhost:5174/api/analysis/latest/${username}`
+        `https://fancy-avrit-isali-e9a270c8.koyeb.app/api/analysis/latest/${username}`
       );
 
       if (!response.ok) {

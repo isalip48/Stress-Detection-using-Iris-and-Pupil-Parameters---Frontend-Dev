@@ -115,7 +115,7 @@ export function Dashboard() {
 
       // Make API call to main backend for storage
       const uploadResponse = await fetch(
-        "http://localhost:5174/api/upload/eye-image",
+        "https://fancy-avrit-isali-e9a270c8.koyeb.app/api/upload/eye-image",
         {
           method: "POST",
           body: formData,
@@ -184,7 +184,7 @@ export function Dashboard() {
 
       // Submit the analysis to the main backend
       const analysisResponse = await fetch(
-        "http://localhost:5174/api/analysis/submit",
+        "https://fancy-avrit-isali-e9a270c8.koyeb.app/api/analysis/submit",
         {
           method: "POST",
           headers: {

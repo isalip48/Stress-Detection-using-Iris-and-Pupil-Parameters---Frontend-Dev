@@ -69,7 +69,7 @@ export function StressRecommendations() {
     try {
       // Using the correct endpoint as per API docs: /api/recommendations/user/:username
       // Add a query parameter for force generation when button is clicked
-      const url = `http://localhost:5174/api/recommendations/user/${user.email}${
+      const url = `https://fancy-avrit-isali-e9a270c8.koyeb.app/api/recommendations/user/${user.email}${
         forceGenerate ? "?generate=true" : ""
       }`;
       const response = await fetch(url);
