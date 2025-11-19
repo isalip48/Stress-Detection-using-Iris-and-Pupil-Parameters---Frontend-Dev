@@ -174,12 +174,18 @@ export function Dashboard() {
       const imageUrl =
         uploadResult.data?.imageUrl || uploadResult.imageUrl || "";
 
+      // Extract pupil diameter and ring count from the full Flask response
+      const pupilDiameter = predictionResult.fullDetails?.measurements?.pupil_diameter_mm || 0;
+      const ringCount = predictionResult.fullDetails?.measurements?.ring_count || 0;
+
       // Create the analysis submission payload
       const analysisData = {
         username: user.email,
         hasStress: hasStress,
         imageUrl: imageUrl,
         confidenceLevel: predictionResult.probability,
+        pupilDilation: pupilDiameter,
+        tensionRings: ringCount,
       };
 
       // Submit the analysis to the main backend
