@@ -115,7 +115,7 @@ export function Dashboard() {
 
       // Make API call to main backend for storage
       const uploadResponse = await fetch(
-        "https://fancy-avrit-isali-e9a270c8.koyeb.app/api/upload/eye-image",
+        `${import.meta.env.VITE_BACKEND_API_URL}/api/upload/eye-image`,
         {
           method: "POST",
           body: formData,
@@ -190,7 +190,7 @@ export function Dashboard() {
 
       // Submit the analysis to the main backend
       const analysisResponse = await fetch(
-        "https://fancy-avrit-isali-e9a270c8.koyeb.app/api/analysis/submit",
+        `${import.meta.env.VITE_BACKEND_API_URL}/api/analysis/submit`,
         {
           method: "POST",
           headers: {
@@ -238,7 +238,7 @@ export function Dashboard() {
       formData.append("age", userAge.toString());
 
       // Make API call to Flask backend for analysis (PORT 5000)
-      const response = await fetch("http://eye-glaze-srj2.vercel.app/predict", {
+      const response = await fetch(`${import.meta.env.VITE_ML_API_URL}/predict`, {
         method: "POST",
         body: formData,
       });

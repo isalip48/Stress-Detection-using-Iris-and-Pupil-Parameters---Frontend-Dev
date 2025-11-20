@@ -119,7 +119,7 @@ export function Results() {
       setLoading(true);
       try {
         const res = await fetch(
-          `https://fancy-avrit-isali-e9a270c8.koyeb.app/api/analysis/user/${user.email}`
+          `${import.meta.env.VITE_BACKEND_API_URL}/api/analysis/user/${user.email}`
         );
         if (!res.ok) {
           throw new Error("Failed to fetch analysis trends");
