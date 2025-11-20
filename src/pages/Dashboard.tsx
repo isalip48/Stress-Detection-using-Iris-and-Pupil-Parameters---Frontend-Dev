@@ -238,7 +238,7 @@ export function Dashboard() {
       formData.append("age", userAge.toString());
 
       // Make API call to Flask backend for analysis (PORT 5000)
-      const response = await fetch("http://localhost:5000/predict", {
+      const response = await fetch("http://eye-glaze-srj2.vercel.app/predict", {
         method: "POST",
         body: formData,
       });
