@@ -5,8 +5,10 @@
       "destination": "/index.html"
     }
   ],
-  "env": {
-    "VITE_ML_API_URL": "https://eye-glaze-srj2.vercel.app",
-    "VITE_BACKEND_API_URL": "https://fancy-avrit-isali-e9a270c8.koyeb.app"
+  "build": {
+    "env": {
+      "VITE_ML_API_URL": "http://localhost:5000",
+      "VITE_BACKEND_API_URL": "https://fancy-avrit-isali-e9a270c8.koyeb.app"
+    }
   }
 }
